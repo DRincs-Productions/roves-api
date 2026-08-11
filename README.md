@@ -26,6 +26,9 @@ import { steam } from "@drincs/roves-api/steam";
   to its own dedicated `steam:` protocol (`servo/ports/servoshell/desktop/protocols/steam.rs`).
   Requires the native binary to be built with `--features steam`; every function degrades to
   a harmless default when Steam isn't compiled in or isn't running.
+- **`cache`** — `clearContentCache()`, wipes the startup extraction cache (not save data) and
+  closes the game, since that cache is the live document root while running. The next launch
+  re-extracts fresh from the shipped bundle.
 
 ## Why a separate package instead of reusing `@tauri-apps/api`
 
