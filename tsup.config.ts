@@ -7,6 +7,7 @@ export default defineConfig({
         process: "src/process.ts",
         steam: "src/steam.ts",
         cache: "src/cache.ts",
+        version: "src/version.ts",
     },
     format: ["cjs", "esm"],
     dts: true,

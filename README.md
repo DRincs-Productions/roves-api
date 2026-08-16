@@ -14,6 +14,16 @@ import { exit } from "@drincs/roves-api/process";
 import { steam } from "@drincs/roves-api/steam";
 ```
 
+## Compatible Roves shell version
+
+This version of `@drincs/roves-api` targets Roves shell
+[`v0.1.0`](https://github.com/DRincs-Productions/roves/releases/tag/v0.1.0) — see that
+version's own `COMPATIBLE_SHELL_VERSION` export (`@drincs/roves-api/version`) if you need
+this at runtime (e.g. to log it, or to warn a player running against a mismatched shell). It
+isn't a live check against the running shell — `roves:` has no "get version" command today,
+just a static marker bumped whenever a new shell version is published (see the engine repo's
+own `CLAUDE.md`, "Cutting a versioned release" section).
+
 ## Modules
 
 - **`core`** — `invoke(cmd, args)`, the generic bridge to Roves' `roves:` protocol
@@ -29,6 +39,8 @@ import { steam } from "@drincs/roves-api/steam";
 - **`cache`** — `clearContentCache()`, wipes the startup extraction cache (not save data) and
   closes the game, since that cache is the live document root while running. The next launch
   re-extracts fresh from the shipped bundle.
+- **`version`** — `COMPATIBLE_SHELL_VERSION`, the Roves shell version this package targets
+  (see "Compatible Roves shell version" above).
 
 ## Why a separate package instead of reusing `@tauri-apps/api`
 
