@@ -1,57 +1,60 @@
 {
-  "name": "@drincs/roves-api",
-  "version": "0.2.0",
-  "description": "JS/TS bridge for talking to Roves (the Servo-based embedded game shell) from web content — no Tauri required.",
-  "main": "./dist/core.cjs",
-  "module": "./dist/core.mjs",
-  "types": "./dist/core.d.ts",
-  "files": [
-    "dist"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "exports": {
-    "./package.json": "./package.json",
-    "./*": {
-      "import": {
-        "types": "./dist/*.d.mts",
-        "default": "./dist/*.mjs"
-      },
-      "require": {
-        "types": "./dist/*.d.ts",
-        "default": "./dist/*.cjs"
-      },
-      "default": "./dist/*.mjs"
-    }
-  },
-  "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup --config tsup.config.ts",
-    "lint": "biome lint",
-    "check": "biome check",
-    "format": "biome format --write"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
-    "tsup": "^8.5.1",
-    "typescript": "~6.0.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/BlackRam-oss/servo.git",
-    "directory": "roves-api"
-  },
-  "author": "DRincs-Productions",
-  "license": "MPL-2.0",
-  "keywords": [
-    "roves",
-    "servo",
-    "webview",
-    "ipc",
-    "bridge",
-    "steam",
-    "steamworks",
-    "game"
-  ]
+	"name": "@drincs/roves-api",
+	"version": "0.3.0",
+	"description": "JS/TS bridge for talking to Roves (the Servo-based embedded game shell) from web content — no Tauri required.",
+	"main": "./dist/core.cjs",
+	"module": "./dist/core.mjs",
+	"types": "./dist/core.d.ts",
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"exports": {
+		"./package.json": "./package.json",
+		"./*": {
+			"import": {
+				"types": "./dist/*.d.mts",
+				"default": "./dist/*.mjs"
+			},
+			"require": {
+				"types": "./dist/*.d.ts",
+				"default": "./dist/*.cjs"
+			},
+			"default": "./dist/*.mjs"
+		}
+	},
+	"scripts": {
+		"dev": "tsup --watch",
+		"build": "tsup --config tsup.config.ts",
+		"lint": "biome lint",
+		"check": "biome check",
+		"format": "biome format --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.1",
+		"tsup": "^8.5.1",
+		"typescript": "~6.0.3"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/BlackRam-oss/servo.git",
+		"directory": "roves-api"
+	},
+	"author": "DRincs-Productions",
+	"license": "MPL-2.0",
+	"keywords": [
+		"roves",
+		"servo",
+		"webview",
+		"ipc",
+		"bridge",
+		"steam",
+		"steamworks",
+		"game",
+		"save",
+		"save-game",
+		"indexeddb"
+	]
 }

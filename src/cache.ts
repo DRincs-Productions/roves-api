@@ -29,5 +29,5 @@ import { invoke } from "./core";
  * ```
  */
 export async function clearContentCache(): Promise<void> {
-    await invoke("clear_content_cache");
+	await invoke("clear_content_cache");
 }

@@ -17,7 +17,7 @@ import { steam } from "@drincs/roves-api/steam";
 ## Compatible Roves shell version
 
 This version of `@drincs/roves-api` targets Roves shell
-[`v0.1.0`](https://github.com/DRincs-Productions/roves/releases/tag/v0.1.0) — see that
+[`v0.3.0`](https://github.com/DRincs-Productions/roves/releases/tag/v0.3.0) — see that
 version's own `COMPATIBLE_SHELL_VERSION` export (`@drincs/roves-api/version`) if you need
 this at runtime (e.g. to log it, or to warn a player running against a mismatched shell). It
 isn't a live check against the running shell — `roves:` has no "get version" command today,
@@ -28,7 +28,9 @@ own `CLAUDE.md`, "Cutting a versioned release" section).
 
 - **`core`** — `invoke(cmd, args)`, the generic bridge to Roves' `roves:` protocol
   (`servo/ports/servoshell/desktop/protocols/roves.rs`). Small and general-purpose:
-  window/process lifecycle today, more as Roves grows its own native surface.
+  window/process lifecycle today, more as Roves grows its own native surface. Also exports
+  `isAvailable()`, a genuine runtime check for "is this page actually running inside Roves"
+  (there's no build-time signal for this — Roves injects no global marker into the page).
 - **`process`** — `exit()`, the Roves equivalent of `@tauri-apps/plugin-process`'s `exit()`.
   Closes every open window via Roves' own window API — **not** `window.close()`, which isn't
   reliable for a shell-created top-level window (see that module's own doc comment).
@@ -39,6 +41,13 @@ own `CLAUDE.md`, "Cutting a versioned release" section).
 - **`cache`** — `clearContentCache()`, wipes the startup extraction cache (not save data) and
   closes the game, since that cache is the live document root while running. The next launch
   re-extracts fresh from the shipped bundle.
+- **`saves`** — an async, origin-scoped key/value store for player save data (shaped like
+  IndexedDB, backed by real files), talking to its own dedicated `saves:` protocol
+  (`servo/ports/servoshell/desktop/protocols/saves.rs`). Roves picks the actual on-disk
+  location for you — a `saves/` folder next to the game when running portably, the OS cache
+  directory when installed via `.msi`/`.dmg`/`.deb` — and, when built with `--features steam`,
+  transparently mirrors every write/delete to Steam Cloud. Check `core`'s `isAvailable()`
+  first if your code also needs to run outside Roves.
 - **`version`** — `COMPATIBLE_SHELL_VERSION`, the Roves shell version this package targets
   (see "Compatible Roves shell version" above).
 

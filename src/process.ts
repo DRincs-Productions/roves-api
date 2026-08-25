@@ -20,5 +20,5 @@ import { invoke } from "./core";
 
 /** Closes every open window, which quits the app once none remain. */
 export async function exit(): Promise<void> {
-    await invoke("exit");
+	await invoke("exit");
 }
