@@ -79,20 +79,24 @@ export interface SavesApi {
 	 */
 	isAvailable(): Promise<boolean>;
 
-	/** Write raw bytes under `key`, overwriting any existing save there. */
-	write(key: string, data: Uint8Array): Promise<boolean>;
+	/**
+	 * Write raw bytes under `key`, overwriting any existing save there. A
+	 * numeric `key` (e.g. a save slot id) is converted to a string before
+	 * it's sent over the wire.
+	 */
+	write(key: string | number, data: Uint8Array): Promise<boolean>;
 
 	/** Convenience for a text (typically JSON) save — encodes as UTF-8 for you. */
-	writeText(key: string, text: string): Promise<boolean>;
+	writeText(key: string | number, text: string): Promise<boolean>;
 
 	/** Read the raw bytes stored under `key`, or `null` if nothing's saved there yet. */
-	read(key: string): Promise<Uint8Array | null>;
+	read(key: string | number): Promise<Uint8Array | null>;
 
 	/** Convenience for a text (typically JSON) save — decodes as UTF-8 for you. */
-	readText(key: string): Promise<string | null>;
+	readText(key: string | number): Promise<string | null>;
 
 	/** Delete the save at `key`. Returns `true` even if nothing was there to delete. */
-	delete(key: string): Promise<boolean>;
+	delete(key: string | number): Promise<boolean>;
 
 	/** List every save key currently on disk. */
 	list(): Promise<string[]>;
