@@ -20,9 +20,9 @@
  * import { isAvailable } from "@drincs/roves-api/core";
  * import { saves } from "@drincs/roves-api/saves";
  *
- * if (await isAvailable()) {
- *   await saves.writeText("slot-1", JSON.stringify(gameState));
- *   const saved = await saves.readText("slot-1");
+ * if (isAvailable()) {
+ *   await saves.writeText("slot-1", gameState);
+ *   const saved = await saves.readJSON<typeof gameState>("slot-1");
  * }
  * ```
  */
@@ -100,6 +100,13 @@ export interface SavesApi {
 	/** Convenience for a text (typically JSON) save — decodes as UTF-8 for you. */
 	readText(key: string | number): Promise<string | null>;
 
+	/**
+	 * Convenience for a JSON save written via {@link writeText} with a non-string
+	 * value — decodes as UTF-8 and `JSON.parse`s it for you, typed as `T`. `null` if
+	 * nothing's saved there yet.
+	 */
+	readJSON<T>(key: string | number): Promise<T | null>;
+
 	/** Delete the save at `key`. Returns `true` even if nothing was there to delete. */
 	delete(key: string | number): Promise<boolean>;
 
@@ -137,6 +144,11 @@ export const saves: SavesApi = {
 	async readText(key) {
 		const bytes = await saves.read(key);
 		return bytes !== null ? new TextDecoder().decode(bytes) : null;
+	},
+
+	async readJSON<T>(key: string | number) {
+		const text = await saves.readText(key);
+		return text !== null ? (JSON.parse(text) as T) : null;
 	},
 
 	async delete(key) {
