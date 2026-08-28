@@ -17,30 +17,49 @@
 
 export type InvokeArgs = Record<string, unknown>;
 
+declare global {
+	interface Window {
+		/**
+		 * Set to `true` by a `UserScript` Roves injects into every page before any of
+		 * the page's own scripts run (see `UserContentManager` in
+		 * servo/ports/servoshell/desktop/app.rs) — Servo's own document-start
+		 * script-injection mechanism, the same idea as Tauri's
+		 * `window.__TAURI_INTERNALS__`. Absent entirely outside Roves. Prefer
+		 * {@link isAvailableSync} (or {@link isAvailable}) over reading this directly.
+		 */
+		__ROVES__?: true;
+	}
+}
+
 /**
  * `true` when this page is actually running inside Roves — `false` in a
- * regular browser, or any other embedder that never registered a `roves:`
- * scheme handler. There is no build-time signal for this (Roves injects no
- * global marker into the page — see the engine repo's own README.md,
- * "Embedding" section); this is a genuine runtime check instead, so it works
- * regardless of how (or whether) your own build baked in some other
- * environment flag. Reaching for this before calling into `saves` (or any
- * other Roves-only API) lets your own code branch cleanly between "running
- * under Roves" and "running as a plain website" without a failed `fetch()`
- * ever surfacing as an unhandled rejection.
+ * regular browser, or any other embedder that never injected the `__ROVES__`
+ * marker. Synchronous: no `fetch()` round trip needed, since the marker is
+ * already on `window` by the time any page script runs. Reaching for this
+ * before calling into `saves` (or any other Roves-only API) lets your own
+ * code branch cleanly between "running under Roves" and "running as a plain
+ * website".
  *
  * @example
  * ```ts
- * import { isAvailable } from "@drincs/roves-api/core";
+ * import { isAvailableSync } from "@drincs/roves-api/core";
  * import { saves } from "@drincs/roves-api/saves";
  *
- * if (await isAvailable()) {
+ * if (isAvailableSync()) {
  *   await saves.write("slot-1", myGameState);
  * }
  * ```
  */
+export function isAvailableSync(): boolean {
+	return typeof window !== "undefined" && window.__ROVES__ === true;
+}
+
+/**
+ * Promise-returning form of {@link isAvailableSync}, kept for call sites that don't need
+ * (or were written before) the synchronous check.
+ */
 export async function isAvailable(): Promise<boolean> {
-	return invoke<boolean>("is_available").catch(() => false);
+	return isAvailableSync();
 }
 
 /**
