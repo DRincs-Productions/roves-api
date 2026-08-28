@@ -1,6 +1,6 @@
 {
 	"name": "@drincs/roves-api",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "JS/TS bridge for talking to Roves (the Servo-based embedded game shell) from web content — no Tauri required.",
 	"main": "./dist/core.cjs",
 	"module": "./dist/core.mjs",

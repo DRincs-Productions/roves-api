@@ -25,7 +25,7 @@ declare global {
 		 * servo/ports/servoshell/desktop/app.rs) — Servo's own document-start
 		 * script-injection mechanism, the same idea as Tauri's
 		 * `window.__TAURI_INTERNALS__`. Absent entirely outside Roves. Prefer
-		 * {@link isAvailableSync} (or {@link isAvailable}) over reading this directly.
+		 * {@link isAvailable} over reading this directly.
 		 */
 		__ROVES__?: true;
 	}
@@ -42,24 +42,16 @@ declare global {
  *
  * @example
  * ```ts
- * import { isAvailableSync } from "@drincs/roves-api/core";
+ * import { isAvailable } from "@drincs/roves-api/core";
  * import { saves } from "@drincs/roves-api/saves";
  *
- * if (isAvailableSync()) {
+ * if (isAvailable()) {
  *   await saves.write("slot-1", myGameState);
  * }
  * ```
  */
-export function isAvailableSync(): boolean {
+export function isAvailable(): boolean {
 	return typeof window !== "undefined" && window.__ROVES__ === true;
-}
-
-/**
- * Promise-returning form of {@link isAvailableSync}, kept for call sites that don't need
- * (or were written before) the synchronous check.
- */
-export async function isAvailable(): Promise<boolean> {
-	return isAvailableSync();
 }
 
 /**
