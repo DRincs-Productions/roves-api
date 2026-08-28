@@ -86,8 +86,13 @@ export interface SavesApi {
 	 */
 	write(key: string | number, data: Uint8Array): Promise<boolean>;
 
-	/** Convenience for a text (typically JSON) save — encodes as UTF-8 for you. */
-	writeText(key: string | number, text: string): Promise<boolean>;
+	/**
+	 * Convenience for a JSON-serializable save — encodes as UTF-8 for you. A
+	 * plain `string` is written as-is; any other value is `JSON.stringify`'d
+	 * first, so callers can pass their save object directly instead of
+	 * stringifying it themselves.
+	 */
+	writeText(key: string | number, data: unknown): Promise<boolean>;
 
 	/** Read the raw bytes stored under `key`, or `null` if nothing's saved there yet. */
 	read(key: string | number): Promise<Uint8Array | null>;
@@ -117,7 +122,8 @@ export const saves: SavesApi = {
 		}).catch(() => false);
 	},
 
-	async writeText(key, text) {
+	async writeText(key, data) {
+		const text = typeof data === "string" ? data : JSON.stringify(data);
 		return saves.write(key, new TextEncoder().encode(text));
 	},
 
