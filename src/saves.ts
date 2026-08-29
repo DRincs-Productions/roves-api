@@ -113,6 +113,19 @@ export interface SavesApi {
 	/** List every save key currently on disk. */
 	list(): Promise<string[]>;
 
+	/**
+	 * The most recently modified save key, without reading (or downloading) that save's
+	 * own content — `null` if there are no saves anywhere yet. Unlike {@link list}, this
+	 * also considers Steam Cloud files that have never been read/pulled down locally when
+	 * the native binary is built with `--features steam` and a client is running: Steam
+	 * tracks a per-file timestamp regardless of whether the file has ever touched this
+	 * machine's disk, so a save made on another PC can still win here even before anything
+	 * downloads it. Once you have the key, fetch that one save with {@link readJSON} (or
+	 * {@link readText}/{@link read}) instead of reading every key yourself just to compare
+	 * dates.
+	 */
+	getMostRecent(): Promise<{ key: string; modifiedMs: number } | null>;
+
 	/** Delete every save. Meant for a "reset save data" feature, not routine use. */
 	clear(): Promise<boolean>;
 }
@@ -157,6 +170,12 @@ export const saves: SavesApi = {
 
 	async list() {
 		return callSaves<string[]>("list").catch(() => []);
+	},
+
+	async getMostRecent() {
+		return callSaves<{ key: string; modifiedMs: number } | null>(
+			"most_recent",
+		).catch(() => null);
 	},
 
 	async clear() {

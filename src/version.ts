@@ -6,4 +6,4 @@
  */
 
 /** e.g. `"v0.1.0"` — matches a tag at https://github.com/DRincs-Productions/roves/releases */
-export const COMPATIBLE_SHELL_VERSION = "v0.3.0";
+export const COMPATIBLE_SHELL_VERSION = "v0.4.5";
