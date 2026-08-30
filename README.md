@@ -12,6 +12,7 @@ API whose shape is deliberately familiar if you already know Tauri's:
 import { invoke } from "@drincs/roves-api/core";
 import { exit } from "@drincs/roves-api/process";
 import { steam } from "@drincs/roves-api/steam";
+import { achievements } from "@drincs/roves-api/achievements";
 ```
 
 ## Compatible Roves shell version
@@ -38,6 +39,11 @@ own `CLAUDE.md`, "Cutting a versioned release" section).
   to its own dedicated `steam:` protocol (`servo/ports/servoshell/desktop/protocols/steam.rs`).
   Requires the native binary to be built with `--features steam`; every function degrades to
   a harmless default when Steam isn't compiled in or isn't running.
+- **`achievements`** — a platform-agnostic achievements API (`unlock`/`isUnlocked`/`clear`/
+  `isAvailable`), backed by `steam`'s own achievement methods today. Prefer this over calling
+  `steam.unlockAchievement`/etc. directly from game code — if a future platform backend is
+  added (e.g. Google Play Games Services), it plugs in behind this same interface without any
+  change to code that already calls `achievements.unlock(...)`.
 - **`cache`** — `clearContentCache()`, wipes the startup extraction cache (not save data) and
   closes the game, since that cache is the live document root while running. The next launch
   re-extracts fresh from the shipped bundle.
@@ -57,8 +63,9 @@ Tauri's `invoke()` only works because Tauri's own runtime injects `window.__TAUR
 into the page. Roves has no such runtime and isn't going to pretend to be Tauri — this
 package is a real, independent implementation, just deliberately shaped to feel familiar if
 you already know Tauri's API. If your frontend needs to run under **both** Tauri and Roves,
-branch between this package and `@tauri-apps/api` per shell (see the parent
-pixi-vn-react-template project's `src/lib/steam.ts` for exactly that).
+branch between this package and `@tauri-apps/api` per shell, picking whichever's
+`isAvailable()`/runtime marker check succeeds — both expose a similar shape by design, so the
+branch is usually thin.
 
 ## Usage example
 

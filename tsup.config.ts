@@ -6,6 +6,7 @@ export default defineConfig({
 		core: "src/core.ts",
 		process: "src/process.ts",
 		steam: "src/steam.ts",
+		achievements: "src/achievements.ts",
 		cache: "src/cache.ts",
 		saves: "src/saves.ts",
 		version: "src/version.ts",
