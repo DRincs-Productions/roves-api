@@ -81,3 +81,37 @@ export async function invoke<T = void>(
 	const text = await response.text();
 	return (text.length > 0 ? JSON.parse(text) : undefined) as T;
 }
+
+/**
+ * Host OS and engine info, for bug reports and graphics-compatibility triage.
+ *
+ * Field names deliberately mirror `@tauri-apps/plugin-os`'s (`type()`/`version()`/`arch()`)
+ * and the `os_info` crate's (`os_type`/`version`/`bitness`/`architecture`) own conventions.
+ */
+export interface SystemInfo {
+	/** e.g. `"windows"`, `"macos"`, or a Linux distro id like `"ubuntu"`. */
+	os_type: string;
+	/** `null` when the host couldn't be identified further than {@link os_type}. */
+	os_version: string | null;
+	bitness: "64-bit" | "32-bit";
+	/** Rust's own `std::env::consts::ARCH`, e.g. `"x86_64"`, `"aarch64"`. */
+	architecture: string;
+	/**
+	 * The running Roves/Servo build's own version string — the equivalent of a "webview
+	 * version" elsewhere, but naming the actual rendering engine rather than a wrapper
+	 * around someone else's, which is what matters for graphics/compatibility debugging.
+	 */
+	engine_version: string;
+}
+
+/**
+ * @example
+ * ```ts
+ * import { systemInfo } from "@drincs/roves-api/core";
+ * const info = await systemInfo();
+ * console.log(`${info.os_type} ${info.os_version} (${info.architecture})`);
+ * ```
+ */
+export async function systemInfo(): Promise<SystemInfo> {
+	return invoke<SystemInfo>("system_info");
+}
