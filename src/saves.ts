@@ -136,6 +136,18 @@ export const saves: SavesApi = {
 	},
 
 	async write(key, data) {
+		// The save travels in a POST body (shell v0.7.1+). A save can be megabytes (a visual
+		// novel's screenshot, for one), and the older query-string form put all of it, as base64,
+		// in the URL: slow, and enough to freeze the shell under rapid saves.
+		try {
+			const response = await fetch(`saves:write?key=${encodeURIComponent(key)}`, {
+				method: "POST",
+				body: data as BufferSource,
+			});
+			if (response.ok) return (await response.json()) as boolean;
+		} catch {
+			// Older shells reject a POST without `data`: fall back to the query string.
+		}
 		return callSaves<boolean>("write", {
 			key,
 			data: bytesToBase64(data),
