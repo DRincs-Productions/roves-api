@@ -32,6 +32,11 @@ own `CLAUDE.md`, "Cutting a versioned release" section).
   window/process lifecycle today, more as Roves grows its own native surface. Also exports
   `isAvailable()`, a genuine runtime check for "is this page actually running inside Roves"
   (there's no build-time signal for this — Roves injects no global marker into the page).
+  And `isMcpEnabled()`: `true` only in the top-level game document of a Roves player whose
+  local MCP bridge is running (MCP-enabled development package or `--roves-mcp`), already in
+  the game's entry script; `false` in a regular browser, without the bridge and in child
+  frames. Meant for switching on development-only agent test hooks; it is a hint, not a
+  security boundary.
 - **`process`** — `exit()`, the Roves equivalent of `@tauri-apps/plugin-process`'s `exit()`.
   Closes every open window via Roves' own window API — **not** `window.close()`, which isn't
   reliable for a shell-created top-level window (see that module's own doc comment).

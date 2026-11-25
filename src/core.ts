@@ -28,6 +28,15 @@ declare global {
 		 * {@link isAvailable} over reading this directly.
 		 */
 		__ROVES__?: true;
+		/**
+		 * Defined as a read-only, non-configurable `true` by the Roves CEF player
+		 * in the top-level game document, before any of the page's own scripts
+		 * run, and only while the player's local MCP bridge is running (an
+		 * MCP-enabled development package or `--roves-mcp`). Absent otherwise.
+		 * Carries no session detail. Prefer {@link isMcpEnabled} over reading
+		 * this directly.
+		 */
+		__ROVES_MCP__?: true;
 	}
 }
 
@@ -52,6 +61,34 @@ declare global {
  */
 export function isAvailable(): boolean {
 	return typeof window !== "undefined" && window.__ROVES__ === true;
+}
+
+/**
+ * `true` when this page is the top-level game document of a Roves player
+ * whose local MCP bridge is running, i.e. an MCP client (an AI agent, an IDE)
+ * can inspect and drive the game. `false` in a regular browser, in a Roves
+ * build or package without the bridge, when the bridge failed to start, and
+ * in child frames.
+ *
+ * Synchronous and already final in the game's entry script: the player sets
+ * the marker before any page script runs. Independent of {@link isAvailable}.
+ *
+ * Use it to switch on development-only test hooks for agents (for example a
+ * playtesting bridge). It is a capability hint, not a security boundary: any
+ * page can define the same global itself, so never gate secrets or
+ * privileges on it.
+ *
+ * @example
+ * ```ts
+ * import { isMcpEnabled } from "@drincs/roves-api/core";
+ *
+ * if (import.meta.env.DEV || isMcpEnabled()) {
+ *   enableAgentTestingHooks();
+ * }
+ * ```
+ */
+export function isMcpEnabled(): boolean {
+	return typeof window !== "undefined" && window.__ROVES_MCP__ === true;
 }
 
 /**
