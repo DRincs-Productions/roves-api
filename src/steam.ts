@@ -1,12 +1,14 @@
 /**
- * Steamworks bridge — talks directly to the `steam:` custom protocol
- * registered in servo/ports/servoshell/desktop/protocols/steam.rs, via
+ * Steamworks bridge — talks to the Roves CEF player's same-origin HTTP host
+ * API (`<api>steam/<command>`, when `window.__ROVES__` is its frozen marker:
+ * see `@drincs/roves-api/core`), or to the legacy `steam:` custom protocol
+ * of older shells (servo/ports/servoshell/desktop/protocols/steam.rs), via
  * plain `fetch()`. Steam gets its own dedicated protocol (rather than being
  * routed through `core`'s generic `roves:` `invoke()`) since it's a large,
  * separate SDK surface, not a general "control this app" command.
  *
- * Requires the native binary to be built with `--features steam`
- * (`./mach build --features steam`) — see ../../servo/ports/servoshell/Cargo.toml.
+ * Requires a shell built with Steam support (the CEF player's `steam`
+ * feature; `./mach build --features steam` on older shells).
  * Every function below degrades to a harmless default (null / false / 0)
  * when Steam isn't compiled in or isn't running — never throws.
  *
@@ -20,6 +22,29 @@
  * ```
  */
 
+/** Commands that change state: `POST` on the CEF player's HTTP host API. */
+const MUTATING = new Set([
+	"unlock_achievement",
+	"clear_achievement",
+	"set_stat_int",
+	"set_stat_float",
+	"store_stats",
+	"open_overlay",
+	"open_store",
+]);
+
+/**
+ * The CEF player's host API prefix from its frozen `window.__ROVES__` marker
+ * (see `@drincs/roves-api/core`), or `null` on older shells (`steam:` scheme).
+ */
+function hostApi(): string | null {
+	const marker: unknown =
+		typeof window !== "undefined" ? window.__ROVES__ : undefined;
+	if (typeof marker !== "object" || marker === null) return null;
+	const { transport, api } = marker as { transport?: unknown; api?: unknown };
+	return transport === "http" && typeof api === "string" ? api : null;
+}
+
 async function callSteam<T>(
 	command: string,
 	params?: Record<string, unknown>,
@@ -31,9 +56,15 @@ async function callSteam<T>(
 		}
 	}
 	const queryString = query.toString();
-	const response = await fetch(
-		`steam:${command}${queryString ? `?${queryString}` : ""}`,
-	);
+	const suffix = `${command}${queryString ? `?${queryString}` : ""}`;
+	const api = hostApi();
+	// CEF player: GET for reads, POST for commands that change state or open the overlay.
+	const response = await (api !== null
+		? fetch(`${api}steam/${suffix}`, {
+				method: MUTATING.has(command) ? "POST" : "GET",
+				headers: { "X-Roves-Api": "1" },
+			})
+		: fetch(`steam:${suffix}`));
 	if (!response.ok) throw new Error(`steam: '${command}' failed`);
 	return (await response.json()) as T;
 }
