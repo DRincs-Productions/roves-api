@@ -17,6 +17,17 @@
 
 export type InvokeArgs = Record<string, unknown>;
 
+/**
+ * Host marker of the Roves CEF player: a frozen object defined before any page
+ * script runs, in the top-level game document only. `api` is the same-origin
+ * path prefix of the host API routes (`<api><module>/<cmd>`), which every
+ * request must call with the `X-Roves-Api: 1` header.
+ */
+export interface RovesHostMarker {
+	readonly transport: "http";
+	readonly api: string;
+}
+
 declare global {
 	interface Window {
 		/**
@@ -25,9 +36,10 @@ declare global {
 		 * servo/ports/servoshell/desktop/app.rs) — Servo's own document-start
 		 * script-injection mechanism, the same idea as Tauri's
 		 * `window.__TAURI_INTERNALS__`. Absent entirely outside Roves. Prefer
-		 * {@link isAvailable} over reading this directly.
+		 * {@link isAvailable} over reading this directly. The CEF player defines a
+		 * frozen {@link RovesHostMarker} instead (HTTP host API on the game origin).
 		 */
-		__ROVES__?: true;
+		__ROVES__?: true | RovesHostMarker;
 		/**
 		 * Defined as a read-only, non-configurable `true` by the Roves CEF player
 		 * in the top-level game document, before any of the page's own scripts
@@ -60,7 +72,19 @@ declare global {
  * ```
  */
 export function isAvailable(): boolean {
-	return typeof window !== "undefined" && window.__ROVES__ === true;
+	if (typeof window === "undefined") return false;
+	return window.__ROVES__ === true || hostApi() !== null;
+}
+
+/** The CEF player's HTTP host API prefix, or `null` (older shells, browsers). */
+function hostApi(): string | null {
+	const marker = typeof window !== "undefined" ? window.__ROVES__ : undefined;
+	return typeof marker === "object" &&
+		marker !== null &&
+		marker.transport === "http" &&
+		typeof marker.api === "string"
+		? marker.api
+		: null;
 }
 
 /**
@@ -111,7 +135,14 @@ export async function invoke<T = void>(
 		}
 	}
 	const query = params.toString();
-	const response = await fetch(`roves:${cmd}${query ? `?${query}` : ""}`);
+	const api = hostApi();
+	// CEF player: same-origin route; commands may change state, so always POST.
+	const response = await (api !== null
+		? fetch(`${api}core/${cmd}${query ? `?${query}` : ""}`, {
+				method: "POST",
+				headers: { "X-Roves-Api": "1" },
+			})
+		: fetch(`roves:${cmd}${query ? `?${query}` : ""}`));
 	if (!response.ok) {
 		throw new Error(`roves: '${cmd}' failed (${response.status})`);
 	}

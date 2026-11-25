@@ -27,6 +27,41 @@
  * ```
  */
 
+/** Commands that change state: `POST` on the CEF player's HTTP host API. */
+const MUTATING = new Set(["write", "delete", "clear"]);
+
+/**
+ * The CEF player's host API prefix from its frozen `window.__ROVES__` marker
+ * (see `@drincs/roves-api/core`), or `null` on older shells (`saves:` scheme).
+ */
+function hostApi(): string | null {
+	const marker: unknown =
+		typeof window !== "undefined" ? window.__ROVES__ : undefined;
+	if (typeof marker !== "object" || marker === null) return null;
+	const { transport, api } = marker as { transport?: unknown; api?: unknown };
+	return transport === "http" && typeof api === "string" ? api : null;
+}
+
+/** `fetch` of one `saves` command over the host's transport. */
+function fetchSaves(
+	command: string,
+	queryString: string,
+	body?: BufferSource,
+): Promise<Response> {
+	const suffix = `${command}${queryString ? `?${queryString}` : ""}`;
+	const api = hostApi();
+	if (api === null) {
+		return body === undefined
+			? fetch(`saves:${suffix}`)
+			: fetch(`saves:${suffix}`, { method: "POST", body });
+	}
+	return fetch(`${api}saves/${suffix}`, {
+		method: body !== undefined || MUTATING.has(command) ? "POST" : "GET",
+		headers: { "X-Roves-Api": "1" },
+		body,
+	});
+}
+
 async function callSaves<T>(
 	command: string,
 	params?: Record<string, unknown>,
@@ -37,10 +72,7 @@ async function callSaves<T>(
 			query.set(key, String(value));
 		}
 	}
-	const queryString = query.toString();
-	const response = await fetch(
-		`saves:${command}${queryString ? `?${queryString}` : ""}`,
-	);
+	const response = await fetchSaves(command, query.toString());
 	if (!response.ok) throw new Error(`saves: '${command}' failed`);
 	return (await response.json()) as T;
 }
@@ -140,14 +172,17 @@ export const saves: SavesApi = {
 		// novel's screenshot, for one), and the older query-string form put all of it, as base64,
 		// in the URL: slow, and enough to freeze the shell under rapid saves.
 		try {
-			const response = await fetch(`saves:write?key=${encodeURIComponent(key)}`, {
-				method: "POST",
-				body: data as BufferSource,
-			});
+			const response = await fetchSaves(
+				"write",
+				`key=${encodeURIComponent(key)}`,
+				data as BufferSource,
+			);
 			if (response.ok) return (await response.json()) as boolean;
 		} catch {
 			// Older shells reject a POST without `data`: fall back to the query string.
 		}
+		// The CEF player's host API only takes the body form.
+		if (hostApi() !== null) return false;
 		return callSaves<boolean>("write", {
 			key,
 			data: bytesToBase64(data),
