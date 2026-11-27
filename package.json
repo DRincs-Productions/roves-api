@@ -28,7 +28,7 @@
 	"scripts": {
 		"dev": "tsup --watch",
 		"build": "tsup --config tsup.config.ts",
-		"test": "node --experimental-strip-types --test test/core.test.mts test/transport.test.mts",
+		"test": "node --experimental-strip-types --test test/core.test.mts test/transport.test.mts test/mods.test.mts",
 		"lint": "biome lint",
 		"check": "biome check",
 		"format": "biome format --write"

@@ -9,6 +9,7 @@ export default defineConfig({
 		achievements: "src/achievements.ts",
 		cache: "src/cache.ts",
 		saves: "src/saves.ts",
+		mods: "src/mods.ts",
 		version: "src/version.ts",
 	},
 	format: ["cjs", "esm"],

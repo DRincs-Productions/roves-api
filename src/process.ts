@@ -22,3 +22,12 @@ import { invoke } from "./core";
 export async function exit(): Promise<void> {
 	await invoke("exit");
 }
+
+/**
+ * Closes the game and starts it again (Roves CEF player). Use it after
+ * enabling, disabling or reordering mods and DLC (`@drincs/roves-api/mods`),
+ * which apply at the next launch.
+ */
+export async function relaunch(): Promise<void> {
+	await invoke("relaunch");
+}

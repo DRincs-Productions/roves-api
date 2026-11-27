@@ -39,7 +39,14 @@ own `CLAUDE.md`, "Cutting a versioned release" section).
   security boundary.
 - **`process`** — `exit()`, the Roves equivalent of `@tauri-apps/plugin-process`'s `exit()`.
   Closes every open window via Roves' own window API — **not** `window.close()`, which isn't
-  reliable for a shell-created top-level window (see that module's own doc comment).
+  reliable for a shell-created top-level window (see that module's own doc comment). And
+  `relaunch()` (CEF player): closes the game and starts it again, for mod and DLC changes.
+- **`mods`** — mods and DLC in the CEF player: `isSupported()`, `list()` (id, name,
+  description, cover image URL, version, compatibility and the reasons, required mods, shared
+  and bundled libraries), `setEnabled(id, enabled)`, `setOrder(ids)`, `restartRequired()`
+  and `loadAll(api)`, which runs every active add-on's `main` module with the API object your
+  game exposes. `defineMod()` types an add-on's module. Changes apply at the next launch
+  (`relaunch()`). See the wiki's "Mods and DLC" page.
 - **`steam`** — a full Steamworks wrapper (achievements, stats, DLC, overlay, store), talking
   to its own dedicated `steam:` protocol (`servo/ports/servoshell/desktop/protocols/steam.rs`).
   Requires the native binary to be built with `--features steam`; every function degrades to
